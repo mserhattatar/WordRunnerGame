@@ -4,16 +4,20 @@ using UnityEngine;
 public class DoorController : MonoBehaviour
 {
     public TextMeshPro doorTextMeshPro;
+    public bool isSetActive;
     [HideInInspector]public string doorLetter;
 
-    public void UpdateDoorLetter(string doorLetter)
+    public void SetDoorPosWriteLetter(string letter, Vector3 pos)
     {
-        this.doorLetter = doorLetter;
-        doorTextMeshPro.text = this.doorLetter;
+        SetDoor(true);
+        doorLetter = letter;
+        doorTextMeshPro.text = doorLetter;
+        transform.position = pos;
     }
 
-    public void SetDoor(bool SetActive)
+    public void SetDoor(bool setActive)
     {
-        gameObject.SetActive(SetActive);
+        gameObject.SetActive(setActive);
+        isSetActive = setActive;
     }
 }
