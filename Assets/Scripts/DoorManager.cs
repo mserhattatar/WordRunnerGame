@@ -11,6 +11,7 @@ public class DoorManager : MonoBehaviour
     [SerializeField] private Transform player;
     private readonly string alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private float _doorPosDistance = 40f;
+    private static readonly Random Rng = new Random();
 
     private void Start()
     {
@@ -20,7 +21,9 @@ public class DoorManager : MonoBehaviour
     private void Update()
     {
         if (player.transform.position.z + 30f > _doorPosDistance)
-            CreateDoorLetters(3);
+        {
+            CreateDoorLetters(Rng.Next(2, 4));
+        }
     }
 
     private List<SelectedWordChar> GetSelectedWordList()
@@ -75,7 +78,6 @@ public class DoorManager : MonoBehaviour
         }
 
         return letters;
-        
     }
 
     private void SetDoorsPositions(int doorNumber, IReadOnlyList<string> doorLetters)
