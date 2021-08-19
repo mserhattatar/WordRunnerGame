@@ -11,17 +11,22 @@ public class DoorManager : MonoBehaviour
     [SerializeField] private Transform player;
     private readonly string alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private float _doorPosDistance = 40f;
+    private bool _doorCreated;
     private static readonly Random Rng = new Random();
+
 
     private void Start()
     {
+        GameManager.ResetLevelDelegate += ResetDoorManager;
+        GameManager.NextLevelDelegate += ResetDoorManager;
         CreateDoorLetters(3);
     }
 
     private void Update()
     {
-        if (player.transform.position.z + 30f > _doorPosDistance)
+        if (!_doorCreated && player.transform.position.z + 30f > _doorPosDistance)
         {
+            _doorCreated = true;
             CreateDoorLetters(Rng.Next(2, 4));
         }
     }
@@ -46,7 +51,16 @@ public class DoorManager : MonoBehaviour
         var hiddens = selectedChars.Where(c => c.IsHidden).ToList();
         if (hiddens.Count == 0)
         {
-            Debug.LogWarning("hiddens char list is empty or null");
+            GameManager.instance.SubtractLevelWordNumber(1);
+            if (GetLevelWordNumber() == 0)
+            {
+                CanvasManager.SetWordCountRemainingDelegate();
+                CanvasManager.LevelWordCompletedSetActiveDelegate();
+                return;
+            }
+
+            WordManager.NextWordDelegate();
+            _doorCreated = false;
             return;
         }
 
@@ -96,15 +110,32 @@ public class DoorManager : MonoBehaviour
         }
 
         _doorPosDistance += 40f;
+        _doorCreated = false;
     }
 
-    private void SetDoorPassive(float playerPosZ)
+    private void SetDoorPassive(float playerPosZ = 0, bool all = false)
     {
         var activeDoors = doorsList.Where(d => d.isSetActive).ToList();
 
-        foreach (var t in activeDoors.Where(t => playerPosZ > t.gameObject.transform.position.z))
+        foreach (var a in activeDoors)
         {
-            t.GetComponent<DoorController>().SetDoor(false);
+            if (all || playerPosZ > a.gameObject.transform.position.z)
+            {
+                a.GetComponent<DoorController>().SetDoor(false);
+            }
         }
+    }
+
+    private int GetLevelWordNumber()
+    {
+        return GameManager.instance.levelWordNumber;
+    }
+
+    private void ResetDoorManager()
+    {
+        SetDoorPassive(0, true);
+        _doorPosDistance = 40f;
+        _doorCreated = false;
+        CanvasManager.SetWordCountRemainingDelegate();
     }
 }

@@ -7,10 +7,9 @@ namespace PlayerScript
     {
         public delegate void PlayerAnimatorDelegate();
 
-        public static PlayerAnimatorDelegate PlayerRunAnimationDelegate;
         public static PlayerAnimatorDelegate PlayerStumbleAnimationDelegate;
-        
-        
+
+
         private Animator _animator;
         private static readonly int PlayerRun = Animator.StringToHash("PlayerRun");
         private static readonly int PlayerStumble = Animator.StringToHash("PlayerStumble");
@@ -18,23 +17,19 @@ namespace PlayerScript
         private void Awake()
         {
             _animator = gameObject.GetComponent<Animator>();
-            PlayerRunAnimationDelegate += PlayerRunAnimationSetActive;
+            PlayerMovementController.StartPlayerMovementDelegate += PlayerRunAnimationSetActive;
+            PlayerMovementController.StopPlayerMovementDelegate += PlayerRunAnimationSetPassive;
+            CanvasManager.LevelWordCompletedSetActiveDelegate += PlayerRunAnimationSetPassive;
             PlayerStumbleAnimationDelegate += PlayerStumbleAnimationActive;
-        }
-
-        private void Start()
-        {
-            PlayerRunAnimationDelegate();
         }
 
         private void PlayerRunAnimationSetActive()
         {
-            PlayerRunAnimation(true);
+            _animator.SetBool(PlayerRun, true);
         }
-
-        private void PlayerRunAnimation(bool setActive)
+        private void PlayerRunAnimationSetPassive()
         {
-            _animator.SetBool(PlayerRun, setActive);
+            _animator.SetBool(PlayerRun, false);
         }
 
         private void PlayerStumbleAnimationActive()

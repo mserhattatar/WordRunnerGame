@@ -25,7 +25,7 @@ public class WordManager : MonoBehaviour
 {
     private readonly string[] _words = new[]
     {
-        "ASTRAL", "ATOMIC", "BENIGN", "BRAINY", "BRİGHT", "CHALKY", "CHEEKY", "CHUMMY", "CLAMMY", "CLUMPY", "COGENT",
+        "ASTRAL", "ATOMIC", "BENIGN", "BRAINY", "BRIGHT", "CHALKY", "CHEEKY", "CHUMMY", "CLAMMY", "CLUMPY", "COGENT",
         "COMELY", "CRAVEN", "DECENT", "DEMURE", "DIRECT", "DREAMY", "EARTHY", "EFFETE", "EROTIC", "FILTHY", "FLABBY",
         "FLIRTY", "FOLIAR", "GLASSY", "GLOOMY", "GRUBBY", "GRUMPY", "HEARTY", "HEATED", "HECTIC", "HUNGRY", "IRENIC",
         "IRONIC", "KARMIC", "KINGLY", "LATENT", "MATURE", "MIGHTY", "MULISH", "NATIVE", "PALLID", "PATCHY", "POROUS",
@@ -33,12 +33,15 @@ public class WordManager : MonoBehaviour
         "TENDER", "TORPID", "TOUCHY", "TRENDY", "UPPITY", "URSINE", "VESTAL", "WORTHY"
     }; //TODO: add more words
 
-    private static readonly Random Rng = new Random();
     [SerializeField] private List<PanelLetterController> lettersInPanelChar;
+    private static readonly Random Rng = new Random();
 
+    public delegate void WordManagerDelegate();
 
-    public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
-    public string selectedWord;
+    public static WordManagerDelegate NextWordDelegate;
+
+    [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
+    [HideInInspector] public string selectedWord;
     public int hiddenLetterAmount = 2; //TODO: set it automatically
     public static WordManager İnstance;
 
@@ -49,14 +52,18 @@ public class WordManager : MonoBehaviour
 
     private void Start()
     {
+        NextWordDelegate += SetSelectedWord;
+        GameManager.NextLevelDelegate += SetSelectedWord;
+        GameManager.ResetLevelDelegate += SetSelectedWord;
         SetSelectedWord();
-        InitSelectedWord(selectedWord);
     }
 
     private void SetSelectedWord()
     {
         var wordIndex = Rng.Next(_words.Length);
         selectedWord = _words[wordIndex];
+        selectedWordCharList.Clear();
+        InitSelectedWord(selectedWord);
     }
 
     private void InitSelectedWord(string _selectedWord)
@@ -87,26 +94,24 @@ public class WordManager : MonoBehaviour
         }
     }
 
-
     // Check if letter is one of the hidden letters. If yes; show the letter in box
-    public void FindLetterAndShow(string letter)
+    public void FindLetterAndShow(string letter, Vector3 dorPos)
     {
         var found = selectedWordCharList.FirstOrDefault(h => h.Letter.ToString() == letter && h.IsHidden);
 
+
         if (found != null)
         {
-            lettersInPanelChar[found.Index].SetLetterVisibility(true);
+            //TODO: set true visibilty after the doorpanelimage movement
+            //lettersInPanelChar[found.Index].SetLetterVisibility(true);
             selectedWordCharList[found.Index].IsHidden = false;
+
+            CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, lettersInPanelChar[found.Index], letter);
         }
         else
         {
             PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
             CineMachineManager.CineMachineShakeDelegate();
         }
-    }
-
-    public static List<string> GetHiddenLetters(string selectedWord, List<int> hiddenLettersIndex)
-    {
-        return hiddenLettersIndex.Select(t => selectedWord[t].ToString()).ToList();
     }
 }
