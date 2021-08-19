@@ -5,118 +5,108 @@ using TMPro;
 using UnityEngine;
 using Random = System.Random;
 
-public class WordManager : MonoBehaviour
-{
-    
-    private readonly string[] _words = new[] { "SEVNUR", "SERHAT", "DENEME" }; //TODO: add more words
-    [SerializeField] private List<PanelLetterController> lettersInPanelChar;
-    private List<int> _hiddenLettersIndex = new List<int>();
-
-    
-    public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
-    public string selectedWord;
-    public int hiddenLetterAmount = 2; //TODO: set it automatically
-    public static WordManager instance;
-
-    private void Awake()
-    {
-        instance = this;
-    }
-
-    private void Start()
-    {
-        selectedWord = _words[2]; //TODO: set it automatically
-        InitLetter(selectedWord);
-    }
-
-    private void InitLetter(string word)
-    {
-        _hiddenLettersIndex = CreateRandomNumber(hiddenLetterAmount, word.Length);
-        for (int i = 0; i < word.Length; i++)
-        {
-            lettersInPanelChar[i].UpdateLetter(word[i].ToString());
-            // Hide random letters of the word
-            if (_hiddenLettersIndex.IndexOf(i) >= 0)
-                lettersInPanelChar[i].SetLetterVisibility(false);
-        }
-    }
-
-
-    // Create different random numbers in wordLength
-    public static List<int> CreateRandomNumber(int amount, int maxNumber)
-    {
-        var ran = new Random();
-        var numbers = new List<int>();
-
-        while (numbers.Count < amount)
-        {
-            int num = ran.Next(maxNumber);
-            if (numbers.IndexOf(num) < 0)
-                numbers.Add(num);
-        }
-
-        return numbers;
-    }
-
-    public static List<string> GetHiddenLetters(string selectedWord, List<int> _hiddenLettersIndex)
-    {
-        var hiddenLettersList = new List<string>();
-        for (int i = 0; i < _hiddenLettersIndex.Count; i++)
-        {
-            hiddenLettersList.Add(selectedWord[_hiddenLettersIndex[i]].ToString());
-        }
-
-        return hiddenLettersList;
-    }
-
-
-    public List<int> GetHiddenLetterIndex()
-    {
-        return _hiddenLettersIndex;
-    }
-    // Check if letter is one of the hidden letters. If yes; show the letter in box
-    public void FindLetterAndShow(string letter)
-    {
-        var hiddenElement = _hiddenLettersIndex.First(h => selectedWord[h].ToString() == letter);
-
-        if (hiddenElement >= 0)
-        {
-            lettersInPanelChar[hiddenElement].SetLetterVisibility(true);
-            _hiddenLettersIndex.Remove(hiddenElement);
-            //UpdateHiddenLetters();
-        }
-    }
-
-    public void SetSelectedWord()
-    {
-        // Select a random word from words
-        // Set this word as selected word
-        // Remove this word from words list
-    }
-
-    public string GetSelectedWord()
-    {
-        return selectedWord;
-    }
-
-    public void setHiddenAmount(int levelNumber)
-    {
-        hiddenLetterAmount = levelNumber / 3 + 2;
-    }
-
-}
 
 [Serializable]
 public class SelectedWordChar
 {
     public int Index { get; set; }
-    public char Letter { get; set; }
+    public string Letter { get; set; }
     public bool IsHidden { get; set; }
-    
-    public SelectedWordChar(int index, char letter, bool isHidden)
+
+    public SelectedWordChar(int index, string letter, bool isHidden)
     {
         Index = index;
         Letter = letter;
         IsHidden = isHidden;
+    }
+}
+
+public class WordManager : MonoBehaviour
+{
+    private readonly string[] _words = new[]
+    {
+        "ASTRAL", "ATOMIC", "BENIGN", "BRAINY", "BRİGHT", "CHALKY", "CHEEKY", "CHUMMY", "CLAMMY", "CLUMPY", "COGENT",
+        "COMELY", "CRAVEN", "DECENT", "DEMURE", "DIRECT", "DREAMY", "EARTHY", "EFFETE", "EROTIC", "FILTHY", "FLABBY",
+        "FLIRTY", "FOLIAR", "GLASSY", "GLOOMY", "GRUBBY", "GRUMPY", "HEARTY", "HEATED", "HECTIC", "HUNGRY", "IRENIC",
+        "IRONIC", "KARMIC", "KINGLY", "LATENT", "MATURE", "MIGHTY", "MULISH", "NATIVE", "PALLID", "PATCHY", "POROUS",
+        "PRETTY", "PUTRID", "RAGGED", "RANCID", "RECENT", "RUSTIC", "SECRET", "SERENE", "SLOPPY", "SPONGY", "STUPID",
+        "TENDER", "TORPID", "TOUCHY", "TRENDY", "UPPITY", "URSINE", "VESTAL", "WORTHY"
+    }; //TODO: add more words
+
+    private static Random _rng = new Random();
+    [SerializeField] private List<PanelLetterController> lettersInPanelChar;
+
+
+    public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
+    public string selectedWord;
+    public int hiddenLetterAmount = 2; //TODO: set it automatically
+    public static WordManager İnstance;
+
+    private void Awake()
+    {
+        İnstance = this;
+    }
+
+    private void Start()
+    {
+        SetSelectedWord();
+        InitSelectedWord(selectedWord);
+    }
+
+    private void SetSelectedWord()
+    {
+        var wordIndex = _rng.Next(_words.Length);
+        selectedWord = _words[wordIndex];
+    }
+
+    private void InitSelectedWord(string _selectedWord)
+    {
+        var lenght = _selectedWord.Length;
+        for (int i = 0; i < lenght; i++)
+        {
+            selectedWordCharList.Add(new SelectedWordChar(i, _selectedWord[i].ToString(), false));
+            lettersInPanelChar[i].UpdateLetter(_selectedWord[i].ToString());
+        }
+
+        HideRandomLetter(hiddenLetterAmount, lenght);
+    }
+
+    private void HideRandomLetter(int amount, int maxNumber)
+    {
+        var numbers = 0;
+
+        while (numbers < amount)
+        {
+            int num = _rng.Next(maxNumber);
+            if (!selectedWordCharList[num].IsHidden)
+            {
+                selectedWordCharList[num].IsHidden = true;
+                lettersInPanelChar[num].SetLetterVisibility(false);
+                numbers += 1;
+            }
+        }
+    }
+
+
+    // Check if letter is one of the hidden letters. If yes; show the letter in box
+    public void FindLetterAndShow(string letter)
+    {
+        var found = selectedWordCharList.FirstOrDefault(h => h.Letter.ToString() == letter && h.IsHidden);
+
+        if (found != null)
+        {
+            lettersInPanelChar[found.Index].SetLetterVisibility(true);
+            selectedWordCharList[found.Index].IsHidden = false;
+        }
+        else
+        {
+            PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
+            CineMachineManager.CineMachineShakeDelegate();
+        }
+    }
+
+    public static List<string> GetHiddenLetters(string selectedWord, List<int> hiddenLettersIndex)
+    {
+        return hiddenLettersIndex.Select(t => selectedWord[t].ToString()).ToList();
     }
 }
