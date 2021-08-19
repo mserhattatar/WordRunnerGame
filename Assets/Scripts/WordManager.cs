@@ -33,7 +33,7 @@ public class WordManager : MonoBehaviour
         "TENDER", "TORPID", "TOUCHY", "TRENDY", "UPPITY", "URSINE", "VESTAL", "WORTHY"
     }; //TODO: add more words
 
-    private static Random _rng = new Random();
+    private static readonly Random Rng = new Random();
     [SerializeField] private List<PanelLetterController> lettersInPanelChar;
 
 
@@ -55,7 +55,7 @@ public class WordManager : MonoBehaviour
 
     private void SetSelectedWord()
     {
-        var wordIndex = _rng.Next(_words.Length);
+        var wordIndex = Rng.Next(_words.Length);
         selectedWord = _words[wordIndex];
     }
 
@@ -77,7 +77,7 @@ public class WordManager : MonoBehaviour
 
         while (numbers < amount)
         {
-            int num = _rng.Next(maxNumber);
+            int num = Rng.Next(maxNumber);
             if (!selectedWordCharList[num].IsHidden)
             {
                 selectedWordCharList[num].IsHidden = true;
