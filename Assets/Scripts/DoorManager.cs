@@ -1,59 +1,108 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
+using System.Linq;
 using UnityEngine;
 using Random = System.Random;
 
 public class DoorManager : MonoBehaviour
 {
     [SerializeField] private List<DoorController> doorsList;
-    private string alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private List<string> _hiddenLetters = new List<string>();
-    private List<int> _hiddenLettersIndex = new List<int>();
-    private string _selectedWord;
+    [SerializeField] private Transform player;
+    private readonly string alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private float _doorPosDistance = 40f;
 
     private void Start()
     {
-        _hiddenLettersIndex = WordManager.instance.GetHiddenLetterIndex();
-        _selectedWord = WordManager.instance.GetSelectedWord();
         CreateDoorLetters(3);
+    }
+
+    private void Update()
+    {
+        if (player.transform.position.z + 30f > _doorPosDistance)
+            CreateDoorLetters(3);
+    }
+
+    private List<SelectedWordChar> GetSelectedWordList()
+    {
+        return WordManager.İnstance.selectedWordCharList;
     }
 
     private void CreateDoorLetters(int doorNumber)
     {
         // Get a random hidden word
-        var ran = new Random();
-        var index = ran.Next(0, _hiddenLettersIndex.Count);
-        var hiddenLetter = _selectedWord[_hiddenLettersIndex[index]];
-        var doorLetters = CreateRandomLetter(doorNumber - 1);
-        doorLetters.Add(hiddenLetter);
-        
-        var posX = -1.4f;
-        if (doorNumber == 3)
-            posX = -2.5f;
-
-        for (int i = 0; i < doorNumber; i++)
+        var selectedChars = GetSelectedWordList();
+        if (selectedChars == null || selectedChars.Count == 0)
         {
-            doorsList[i].transform.position = new Vector3(posX, 1.52f, 40f);
-            posX += 2.5f;
-            doorsList[i].GetComponent<DoorController>().UpdateDoorLetter(doorLetters[i].ToString());
+            Debug.LogWarning("Selected char list is empty or null");
+            return;
         }
+
+        var ran = new Random();
+        // Create a object list of hidden letters
+        var hiddens = selectedChars.Where(c => c.IsHidden).ToList();
+        if (hiddens.Count == 0)
+        {
+            Debug.LogWarning("hiddens char list is empty or null");
+            return;
+        }
+
+        // Select a random hidden letter to show in one door
+        var index = ran.Next(0, hiddens.Count());
+        var hiddenLetter = hiddens[index].Letter;
+        // Create random letters to show in other doors
+        var doorLetters = CreateRandomLetter(doorNumber - 1, hiddens);
+        doorLetters.Add(hiddenLetter);
+
+        SetDoorPassive(player.transform.position.z);
+        SetDoorsPositions(doorNumber, doorLetters);
     }
 
-    private List<char> CreateRandomLetter(int amount)
+    private List<string> CreateRandomLetter(int amount, List<SelectedWordChar> hiddens)
     {
-        _hiddenLetters = WordManager.GetHiddenLetters(_selectedWord,_hiddenLettersIndex);
+        // Create a string list of hidden letters
+        var hiddenLetters = hiddens.Select(x => x.Letter).ToList();
         var ran = new Random();
-        var letters = new List<char>();
-        
+        var letters = new List<string>();
+
         while (letters.Count < amount)
         {
             var num = ran.Next(alphabetChars.Length);
             var letter = alphabetChars[num];
-            if (letters.IndexOf(letter) < 0 && _hiddenLetters.IndexOf(letter.ToString()) < 0)
-                letters.Add(letter);
+            // Check if random letter is already in letters list or if it is a hidden letter
+            if (letters.IndexOf(letter.ToString()) < 0 && hiddenLetters.IndexOf(letter.ToString()) < 0)
+                letters.Add(letter.ToString());
         }
 
         return letters;
+        
+    }
+
+    private void SetDoorsPositions(int doorNumber, IReadOnlyList<string> doorLetters)
+    {
+        var posX = -1.4f;
+        if (doorNumber == 3)
+            posX = -2.5f;
+
+        var passiveDoors = doorsList.Where(d => !d.isSetActive).ToList();
+        var randomizeDoorLetters = doorLetters.OrderBy(a => Guid.NewGuid()).ToList();
+        for (int i = 0; i < doorNumber; i++)
+        {
+            var pos = new Vector3(posX, 1.52f, _doorPosDistance);
+            posX += 2.5f;
+            passiveDoors[i].GetComponent<DoorController>().SetDoorPosWriteLetter(randomizeDoorLetters[i], pos);
+        }
+
+        _doorPosDistance += 40f;
+    }
+
+    private void SetDoorPassive(float playerPosZ)
+    {
+        var activeDoors = doorsList.Where(d => d.isSetActive).ToList();
+
+        foreach (var t in activeDoors.Where(t => playerPosZ > t.gameObject.transform.position.z))
+        {
+            t.GetComponent<DoorController>().SetDoor(false);
+        }
     }
 }
