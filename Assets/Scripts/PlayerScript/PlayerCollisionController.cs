@@ -11,8 +11,7 @@ namespace PlayerScript
             if (!_isHitDoor && other.gameObject.CompareTag("door"))
             {
                 StartCoroutine(WaitForDoorCollision());
-                PlayerAnimatorController.PlayerStumbleAnimationDelegate();
-                WordManager.instance.FindLetterAndShow(other.gameObject.GetComponent<DoorController>().doorLetter);
+                WordManager.İnstance.FindLetterAndShow(other.gameObject.GetComponent<DoorController>().doorLetter);
                 other.gameObject.GetComponent<DoorController>().SetDoor(false);
             }
         }
@@ -20,7 +19,7 @@ namespace PlayerScript
         private IEnumerator WaitForDoorCollision()
         {
             _isHitDoor = true;
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.2f);
             _isHitDoor = false;
         }
     }
