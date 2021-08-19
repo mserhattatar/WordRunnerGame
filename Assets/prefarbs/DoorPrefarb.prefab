@@ -152,7 +152,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3570727190107747996}
   - component: {fileID: 3570727190107747992}
-  - component: {fileID: 3570727190107747994}
   - component: {fileID: 3570727190107747995}
   m_Layer: 0
   m_Name: doorLetterText
@@ -221,14 +220,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &3570727190107747994
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3570727190107747997}
-  m_CullTransparentMesh: 0
 --- !u!114 &3570727190107747995
 MonoBehaviour:
   m_ObjectHideFlags: 0

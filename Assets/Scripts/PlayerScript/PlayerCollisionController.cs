@@ -1,19 +1,27 @@
+using System.Collections;
 using UnityEngine;
 
 namespace PlayerScript
 {
     public class PlayerCollisionController : MonoBehaviour
     {
-        public delegate void PlayerCollisionDelegate();
-        public static PlayerCollisionDelegate DoorCollisionDelegate;
-        private void OnCollisionEnter(Collision other)
+        private bool _isHitDoor;
+        private void OnTriggerEnter(Collider other)
         {
-            switch (other.gameObject.tag)
+            if (!_isHitDoor && other.gameObject.CompareTag("door"))
             {
-                case "door":
-                    DoorCollisionDelegate();
-                    break;
+                StartCoroutine(WaitForDoorCollision());
+                PlayerAnimatorController.PlayerStumbleAnimationDelegate();
+                WordManager.instance.FindLetterAndShow(other.gameObject.GetComponent<DoorController>().doorLetter);
+                other.gameObject.GetComponent<DoorController>().SetDoor(false);
             }
+        }
+
+        private IEnumerator WaitForDoorCollision()
+        {
+            _isHitDoor = true;
+            yield return new WaitForSeconds(1f);
+            _isHitDoor = false;
         }
     }
 }

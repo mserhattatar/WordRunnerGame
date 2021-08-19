@@ -7,7 +7,7 @@ namespace PlayerScript
         [HideInInspector] public bool stopPlayerMovement;
         private Transform _playerT;
         private float _forwardSpeed, _movementSpeed, _targetY, _timeCount;
-        private bool _isPlayerRun;
+        public bool isPlayerRun;
         
 
         private void Start()
@@ -21,7 +21,7 @@ namespace PlayerScript
 
         private void FixedUpdate()
         {
-            if (_isPlayerRun) StudentMovement();
+            if (isPlayerRun) StudentMovement();
         }
 
         private void StudentMovement()
