@@ -1,7 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 using Random = System.Random;
 
@@ -23,7 +23,7 @@ public class SelectedWordChar
 
 public class WordManager : MonoBehaviour
 {
-    private readonly string[] _words = new[]
+    private readonly List<string> _words = new List<string>
     {
         "ASTRAL", "ATOMIC", "BENIGN", "BRAINY", "BRIGHT", "CHALKY", "CHEEKY", "CHUMMY", "CLAMMY", "CLUMPY", "COGENT",
         "COMELY", "CRAVEN", "DECENT", "DEMURE", "DIRECT", "DREAMY", "EARTHY", "EFFETE", "EROTIC", "FILTHY", "FLABBY",
@@ -36,34 +36,56 @@ public class WordManager : MonoBehaviour
     [SerializeField] private List<PanelLetterController> lettersInPanelChar;
     private static readonly Random Rng = new Random();
 
+    public static WordManager İnstance;
+    public int hiddenLetterAmount = 2; //TODO: set it automatically
+    [HideInInspector] public string selectedWord;
+    [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
+
     public delegate void WordManagerDelegate();
 
     public static WordManagerDelegate NextWordDelegate;
-
-    [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
-    [HideInInspector] public string selectedWord;
-    public int hiddenLetterAmount = 2; //TODO: set it automatically
-    public static WordManager İnstance;
 
     private void Awake()
     {
         İnstance = this;
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        NextWordDelegate += SetSelectedWord;
+        NextWordDelegate += SetSelectedWordWithDelay;
         GameManager.NextLevelDelegate += SetSelectedWord;
         GameManager.ResetLevelDelegate += SetSelectedWord;
+    }
+
+    private void Start()
+    {
+        SetSelectedWord();
+    }
+  
+
+    private void SetSelectedWordWithDelay()
+    {
+        StartCoroutine(SetSelectedWordDelay());
+    }
+
+    private IEnumerator SetSelectedWordDelay()
+    {
+        yield return new WaitForSeconds(1.3f);
         SetSelectedWord();
     }
 
     private void SetSelectedWord()
     {
-        var wordIndex = Rng.Next(_words.Length);
-        selectedWord = _words[wordIndex];
         selectedWordCharList.Clear();
+        SelectWord();
         InitSelectedWord(selectedWord);
+    }
+    
+    private void SelectWord()
+    {
+        var wordIndex = Rng.Next(_words.Count);
+        selectedWord = _words[wordIndex];
+        _words.Remove(_words[wordIndex]);
     }
 
     private void InitSelectedWord(string _selectedWord)
@@ -71,6 +93,7 @@ public class WordManager : MonoBehaviour
         var lenght = _selectedWord.Length;
         for (int i = 0; i < lenght; i++)
         {
+            lettersInPanelChar[i].SetLetterVisibility(true);
             selectedWordCharList.Add(new SelectedWordChar(i, _selectedWord[i].ToString(), false));
             lettersInPanelChar[i].UpdateLetter(_selectedWord[i].ToString());
         }
@@ -97,21 +120,36 @@ public class WordManager : MonoBehaviour
     // Check if letter is one of the hidden letters. If yes; show the letter in box
     public void FindLetterAndShow(string letter, Vector3 dorPos)
     {
-        var found = selectedWordCharList.FirstOrDefault(h => h.Letter.ToString() == letter && h.IsHidden);
+        var firstFound = selectedWordCharList.FirstOrDefault(h => h.Letter.ToString() == letter && h.IsHidden);
 
-
-        if (found != null)
+        if (firstFound != null)
         {
             //TODO: set true visibilty after the doorpanelimage movement
-            //lettersInPanelChar[found.Index].SetLetterVisibility(true);
-            selectedWordCharList[found.Index].IsHidden = false;
+            CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, lettersInPanelChar[firstFound.Index], letter);
+            selectedWordCharList[firstFound.Index].IsHidden = false;
 
-            CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, lettersInPanelChar[found.Index], letter);
+            var hiddenFirstFound = selectedWordCharList.FirstOrDefault(h => h.IsHidden);
+            if (hiddenFirstFound == null)
+            {
+                GameManager.instance.SubtractLevelWordNumber(1);
+
+                if (GameManager.instance.levelWordNumber == 0)
+                {
+                    CanvasManager.SetWordCountRemainingDelegate();
+                    GameManager.LevelCompletedDelegate();
+                }
+                else
+                    NextWordDelegate();
+            }
         }
         else
         {
+            if (GameManager.instance.SubtractPlayerLife())
+                GameManager.GameOverDelegate();
+            
             PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
             CineMachineManager.CineMachineShakeDelegate();
+            CanvasManager.SetPlayerLifeDelegate();
         }
     }
 }

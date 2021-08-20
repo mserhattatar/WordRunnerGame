@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -9,26 +8,35 @@ public class GameManager : MonoBehaviour
 
     public static GameManagerDelegate NextLevelDelegate;
     public static GameManagerDelegate ResetLevelDelegate;
+    public static GameManagerDelegate GameOverDelegate;
+    public static GameManagerDelegate StartGameDelegate;
+    public static GameManagerDelegate LevelCompletedDelegate;
     public int levelNumber;
     public int levelWordNumber;
+    public int playerLife;
 
     private void Awake()
     {
         instance = this;
         levelNumber = 1;
+        playerLife = 5;
         SetLevelWordNumber();
     }
 
-    private void Start()
+    private void OnEnable()
     {
         GameDataScript.GetLevelDataFromJson();
         NextLevelDelegate += NextLevel;
+        GameOverDelegate += ResetPlayerLifeCount;
+        GameOverDelegate += SetLevelWordNumber;
     }
 
+    
     private void NextLevel()
     {
-        GameDataScript.SetLevelDataAsJson();
+        ResetPlayerLifeCount();
         levelNumber += 1;
+        GameDataScript.SetLevelDataAsJson();
         SetLevelWordNumber();
     }
 
@@ -37,8 +45,19 @@ public class GameManager : MonoBehaviour
         levelWordNumber = levelNumber * 2;
     }
 
-    public void SubtractLevelWordNumber(int substractionNumber)
+    public void SubtractLevelWordNumber(int subtractionNumber)
     {
-        levelWordNumber -= substractionNumber;
+        levelWordNumber -= subtractionNumber;
+    }
+
+    private void ResetPlayerLifeCount()
+    {
+        playerLife = 5;
+    }
+
+    public bool SubtractPlayerLife()
+    {
+        playerLife -= 1;
+        return playerLife == 0;
     }
 }

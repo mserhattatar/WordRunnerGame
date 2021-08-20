@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 
@@ -6,13 +5,14 @@ public class PanelLetterController : MonoBehaviour
 {
     public TextMeshProUGUI letter;
 
-    public void UpdateLetter(string writeletteretter)
+    public void UpdateLetter(string writeLetter)
     {
-        letter.text = writeletteretter;
+        letter.text = writeLetter;
     }
 
     public void SetLetterVisibility(bool setActive)
     {
         letter.gameObject.SetActive(setActive);
     }
+
 }

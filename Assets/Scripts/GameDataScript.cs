@@ -6,7 +6,7 @@ public static class GameDataScript
 {
     public static void SetLevelDataAsJson()
     {
-        string path = Application.persistentDataPath + "/RunRunGameData.json";
+        string path = Application.persistentDataPath + "/RunnerCore.json";
         var data = SerializeMapData();
 
         using (FileStream fs = new FileStream(path, FileMode.Create))
@@ -28,7 +28,7 @@ public static class GameDataScript
 
     public static void GetLevelDataFromJson()
     {
-        string path = Application.persistentDataPath + "/RunRunGameData.json";
+        string path = Application.persistentDataPath + "/RunnerCore.json";
         var data = ReadDataFromText(path);
         var levelData = JsonUtility.FromJson<LevelData>(data);
         GetLevelNumberData(levelData);

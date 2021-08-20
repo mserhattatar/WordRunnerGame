@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace PlayerScript
@@ -11,22 +12,32 @@ namespace PlayerScript
 
         public delegate void PlayerMovementDelegate();
 
-        public static PlayerMovementDelegate StartPlayerMovementDelegate;
         public static PlayerMovementDelegate StopPlayerMovementDelegate;
+
+        private void OnEnable()
+        {
+            StopPlayerMovementDelegate += StopPlayerMovement;
+
+            GameManager.LevelCompletedDelegate += StopPlayerMovement;
+
+            GameManager.StartGameDelegate += StartPlayerMovement;
+            GameManager.StartGameDelegate += CheckJoystickFalse;
+
+            GameManager.GameOverDelegate += StopPlayerMovement;
+
+            GameManager.ResetLevelDelegate += ResetMovement;
+            GameManager.ResetLevelDelegate += CheckJoystickTrue;
+
+            GameManager.NextLevelDelegate += ResetMovement;
+            GameManager.NextLevelDelegate += CheckJoystickTrue;
+        }
 
         private void Start()
         {
-            StartPlayerMovementDelegate += StartPlayerMovement;
-            StartPlayerMovementDelegate += CheckJoystickFalse;
-            StopPlayerMovementDelegate += StopPlayerMovement;
-            CanvasManager.LevelWordCompletedSetActiveDelegate += StopPlayerMovement;
-            GameManager.NextLevelDelegate += ResetMovement;
-            GameManager.NextLevelDelegate += CheckJoystickTrue;
-
             CheckJoystickTrue();
             _playerT = transform;
             _forwardSpeed = 2.4f;
-            _movementSpeed = 1.7f;
+            _movementSpeed = 1.5f;
             _targetY = 0.24f;
             _timeCount = 0.0f;
         }
@@ -37,10 +48,10 @@ namespace PlayerScript
             else if (_checkJoystick) CheckJoystick();
         }
 
-        private void CheckJoystick()
+        private static void CheckJoystick()
         {
             if (CheckJoystickHorizontal())
-                StartPlayerMovementDelegate();
+                GameManager.StartGameDelegate();
         }
 
         private void StudentMovement()
@@ -70,7 +81,7 @@ namespace PlayerScript
 
         private void StudentMovementRotatian(Transform playerT)
         {
-            var direction = playerT.position + Vector3.right * (JoystickHorizontal * 9f * _timeCount);
+            var direction = playerT.position + Vector3.right * (JoystickHorizontal * 3.5f * _timeCount);
             var lookRotation = Quaternion.LookRotation(direction);
             playerT.rotation = Quaternion.Slerp(playerT.rotation, lookRotation, _timeCount);
             _timeCount += Time.deltaTime;
@@ -98,8 +109,10 @@ namespace PlayerScript
 
         private void ResetMovement()
         {
+            _timeCount = 0f;
             StopPlayerMovementDelegate();
             gameObject.transform.position = new Vector3(0, 0.53f, 0);
+            DoorManager.SetOldPlayerPosDelegate();
         }
     }
 }

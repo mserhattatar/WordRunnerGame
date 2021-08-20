@@ -17,9 +17,18 @@ namespace PlayerScript
         private void Awake()
         {
             _animator = gameObject.GetComponent<Animator>();
-            PlayerMovementController.StartPlayerMovementDelegate += PlayerRunAnimationSetActive;
+        }
+
+        private void OnEnable()
+        {
+            GameManager.StartGameDelegate += PlayerRunAnimationSetActive;
+            
+            GameManager.GameOverDelegate += PlayerRunAnimationSetPassive;
+            
             PlayerMovementController.StopPlayerMovementDelegate += PlayerRunAnimationSetPassive;
-            CanvasManager.LevelWordCompletedSetActiveDelegate += PlayerRunAnimationSetPassive;
+            
+            GameManager.LevelCompletedDelegate += PlayerRunAnimationSetPassive;
+            
             PlayerStumbleAnimationDelegate += PlayerStumbleAnimationActive;
         }
 
@@ -27,6 +36,7 @@ namespace PlayerScript
         {
             _animator.SetBool(PlayerRun, true);
         }
+
         private void PlayerRunAnimationSetPassive()
         {
             _animator.SetBool(PlayerRun, false);

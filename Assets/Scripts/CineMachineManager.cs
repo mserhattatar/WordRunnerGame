@@ -1,3 +1,4 @@
+using System;
 using Cinemachine;
 using UnityEngine;
 
@@ -13,12 +14,13 @@ public class CineMachineManager : MonoBehaviour
     public static CineMachineDelegate CineMachineShakeDelegate;
 
 
-    private void Start()
+    private void OnEnable()
     {
+        CineMachineShakeDelegate += ShakeCamera;
+
         _shakeTimer = 0f;
         _cineMPerlin = gameObject.GetComponent<CinemachineVirtualCamera>()
             .GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-        CineMachineShakeDelegate += ShakeCamera;
     }
 
     private void Update()

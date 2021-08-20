@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using UnityEngine;
 using Random = System.Random;
@@ -9,22 +8,34 @@ public class DoorManager : MonoBehaviour
 {
     [SerializeField] private List<DoorController> doorsList;
     [SerializeField] private Transform player;
-    private readonly string alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private float _doorPosDistance = 40f;
+    private string _alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private float _playerOldPosY;
     private bool _doorCreated;
     private static readonly Random Rng = new Random();
+    
+    public delegate void DoorManagerDelegate();
+
+    public static DoorManagerDelegate SetOldPlayerPosDelegate;
+
+    private void OnEnable()
+    {
+        SetOldPlayerPosDelegate += SetPlayerOldPos;
+        
+        GameManager.ResetLevelDelegate += ResetDoorManager;
+
+        GameManager.NextLevelDelegate += ResetDoorManager;
+    }
 
 
     private void Start()
     {
-        GameManager.ResetLevelDelegate += ResetDoorManager;
-        GameManager.NextLevelDelegate += ResetDoorManager;
-        CreateDoorLetters(3);
+        CreateDoorLetters(2);
+        SetPlayerOldPos();
     }
 
     private void Update()
     {
-        if (!_doorCreated && player.transform.position.z + 30f > _doorPosDistance)
+        if (!_doorCreated && player.transform.position.z > _playerOldPosY + 40f)
         {
             _doorCreated = true;
             CreateDoorLetters(Rng.Next(2, 4));
@@ -46,29 +57,20 @@ public class DoorManager : MonoBehaviour
             return;
         }
 
-        var ran = new Random();
-        // Create a object list of hidden letters
-        var hiddens = selectedChars.Where(c => c.IsHidden).ToList();
-        if (hiddens.Count == 0)
-        {
-            GameManager.instance.SubtractLevelWordNumber(1);
-            if (GetLevelWordNumber() == 0)
-            {
-                CanvasManager.SetWordCountRemainingDelegate();
-                CanvasManager.LevelWordCompletedSetActiveDelegate();
-                return;
-            }
 
-            WordManager.NextWordDelegate();
+        // Create a object list of hidden letters
+        var hiddenList = selectedChars.Where(c => c.IsHidden).ToList();
+        if (hiddenList.Count == 0)
+        {
             _doorCreated = false;
             return;
         }
 
         // Select a random hidden letter to show in one door
-        var index = ran.Next(0, hiddens.Count());
-        var hiddenLetter = hiddens[index].Letter;
+        var index = Rng.Next(0, hiddenList.Count());
+        var hiddenLetter = hiddenList[index].Letter;
         // Create random letters to show in other doors
-        var doorLetters = CreateRandomLetter(doorNumber - 1, hiddens);
+        var doorLetters = CreateRandomLetter(doorNumber - 1, hiddenList);
         doorLetters.Add(hiddenLetter);
 
         SetDoorPassive(player.transform.position.z);
@@ -84,8 +86,8 @@ public class DoorManager : MonoBehaviour
 
         while (letters.Count < amount)
         {
-            var num = ran.Next(alphabetChars.Length);
-            var letter = alphabetChars[num];
+            var num = ran.Next(_alphabetChars.Length);
+            var letter = _alphabetChars[num];
             // Check if random letter is already in letters list or if it is a hidden letter
             if (letters.IndexOf(letter.ToString()) < 0 && hiddenLetters.IndexOf(letter.ToString()) < 0)
                 letters.Add(letter.ToString());
@@ -104,12 +106,12 @@ public class DoorManager : MonoBehaviour
         var randomizeDoorLetters = doorLetters.OrderBy(a => Guid.NewGuid()).ToList();
         for (int i = 0; i < doorNumber; i++)
         {
-            var pos = new Vector3(posX, 1.52f, _doorPosDistance);
+            var pos = new Vector3(posX, 1.52f, player.transform.position.z + 35f);
             posX += 2.5f;
             passiveDoors[i].GetComponent<DoorController>().SetDoorPosWriteLetter(randomizeDoorLetters[i], pos);
         }
 
-        _doorPosDistance += 40f;
+        SetPlayerOldPos();
         _doorCreated = false;
     }
 
@@ -126,15 +128,15 @@ public class DoorManager : MonoBehaviour
         }
     }
 
-    private int GetLevelWordNumber()
+    private void SetPlayerOldPos()
     {
-        return GameManager.instance.levelWordNumber;
+        _playerOldPosY = player.transform.position.z;
     }
 
     private void ResetDoorManager()
     {
         SetDoorPassive(0, true);
-        _doorPosDistance = 40f;
+        SetPlayerOldPos();
         _doorCreated = false;
         CanvasManager.SetWordCountRemainingDelegate();
     }
