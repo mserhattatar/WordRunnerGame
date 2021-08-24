@@ -106,7 +106,7 @@ public class DoorManager : MonoBehaviour
         var randomizeDoorLetters = doorLetters.OrderBy(a => Guid.NewGuid()).ToList();
         for (int i = 0; i < doorNumber; i++)
         {
-            var pos = new Vector3(posX, 1.52f, player.transform.position.z + 35f);
+            var pos = new Vector3(posX, 1f, player.transform.position.z + 35f);
             posX += 2.5f;
             passiveDoors[i].GetComponent<DoorController>().SetDoorPosWriteLetter(randomizeDoorLetters[i], pos);
         }

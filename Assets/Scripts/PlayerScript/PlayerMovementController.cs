@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace PlayerScript
 {
@@ -13,6 +14,8 @@ namespace PlayerScript
         public delegate void PlayerMovementDelegate();
 
         public static PlayerMovementDelegate StopPlayerMovementDelegate;
+        private NavMeshAgent agent;
+        public Transform target;
 
         private void OnEnable()
         {
@@ -40,10 +43,19 @@ namespace PlayerScript
             _movementSpeed = 1.5f;
             _targetY = 0.24f;
             _timeCount = 0.0f;
+            agent = GetComponent<NavMeshAgent>();
         }
 
         private void FixedUpdate()
         {
+            
+            agent.destination = target.position;
+
+            Vector3 lookPos = target.position - transform.position;
+            lookPos.y = 0;
+            Quaternion rotation = Quaternion.LookRotation(lookPos);
+            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 5f* Time.deltaTime);  
+            
             if (_isPlayerRun) StudentMovement();
             else if (_checkJoystick) CheckJoystick();
         }
@@ -66,13 +78,16 @@ namespace PlayerScript
                 return;
             }
 
-            StudentMovementRotatian(_playerT);
-            var targetZ = pPos.z + _forwardSpeed;
+            //StudentMovementRotatian(_playerT);
+           // var targetZ = pPos.z + _forwardSpeed;
+           var targetZ = pPos.z;
+
+           
             var targetX = pPos.x + JoystickHorizontal * _movementSpeed;
-            if (targetX <= -4f)
+            /*if (targetX <= -4f)
                 targetX = -4f;
             else if (targetX >= 4f)
-                targetX = 4f;
+                targetX = 4f;*/
             var direction = new Vector3(x: targetX, _targetY, targetZ);
 
             transform.position = Vector3.MoveTowards(pPos, direction, 15f * Time.deltaTime);
