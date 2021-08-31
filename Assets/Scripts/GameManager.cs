@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public static GameManagerDelegate StartGameDelegate;
     public static GameManagerDelegate LevelCompletedDelegate;
     public int levelNumber;
+    public int language;
     public int levelWordNumber;
     public int playerLife;
 
@@ -20,23 +21,23 @@ public class GameManager : MonoBehaviour
         instance = this;
         levelNumber = 1;
         playerLife = 5;
-        SetLevelWordNumber();
+        GameDataScript.GetLevelDataFromJson();
     }
 
     private void OnEnable()
     {
-        GameDataScript.GetLevelDataFromJson();
+        SetLevelWordNumber();
         NextLevelDelegate += NextLevel;
         GameOverDelegate += ResetPlayerLifeCount;
         GameOverDelegate += SetLevelWordNumber;
     }
 
-    
+
     private void NextLevel()
     {
         ResetPlayerLifeCount();
         levelNumber += 1;
-        GameDataScript.SetLevelDataAsJson();
+        SetLevelData();
         SetLevelWordNumber();
     }
 
@@ -59,5 +60,10 @@ public class GameManager : MonoBehaviour
     {
         playerLife -= 1;
         return playerLife == 0;
+    }
+
+    public void SetLevelData()
+    {
+        GameDataScript.SetLevelDataAsJson();
     }
 }
