@@ -72,7 +72,7 @@ public class WordManager : MonoBehaviour
         _lettersInPanelChar = canvasWordUIManager.ShowLetters(selectedWord.Length);
         InitSelectedWord(selectedWord);
     }
-    
+
     private void InitSelectedWord(string selectedWord)
     {
         var lenght = selectedWord.Length;
