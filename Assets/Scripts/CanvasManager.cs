@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -13,6 +12,8 @@ public class CanvasManager : MonoBehaviour
 
     [SerializeField] private GameObject wordCompletedPanel;
     [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private GameObject loadingPanel;
     [SerializeField] private GameObject wordsPanel;
     [SerializeField] private GameObject wordCountDownUI;
     [SerializeField] private TextMeshProUGUI wordCountRemaining;
@@ -27,7 +28,7 @@ public class CanvasManager : MonoBehaviour
         SetWordCountRemainingDelegate += SetWordCountRemaining;
         SetPlayerLifeDelegate += SetPlayerLifeText;
 
-        WordManager.NextWordDelegate += SetWordCountRemaining;
+        WordManager.NextWordWithDelayDelegate += SetWordCountRemaining;
 
         GameManager.LevelCompletedDelegate += WordCompletedPanelSetActive;
         GameManager.LevelCompletedDelegate += WordCountDownUISetPassive;
@@ -45,10 +46,12 @@ public class CanvasManager : MonoBehaviour
         GameManager.GameOverDelegate += PlayerLifeUISetPassive;
         GameManager.GameOverDelegate += WordCountDownUISetPassive;
 
+        GameManager.NextLevelDelegate += LoadingPanelPanelSetActive;
         GameManager.NextLevelDelegate += WordCompletedPanelSetPassive;
         GameManager.NextLevelDelegate += WordCountDownUISetActive;
         GameManager.NextLevelDelegate += PlayerLifeUISetPassive;
 
+        GameManager.ResetLevelDelegate += LoadingPanelPanelSetActive;
         GameManager.ResetLevelDelegate += GameOverPanelSetPassive;
         GameManager.ResetLevelDelegate += WordCountDownUISetActive;
         GameManager.ResetLevelDelegate += WordsPanelSetActive;
@@ -81,6 +84,23 @@ public class CanvasManager : MonoBehaviour
         gameOverPanel.SetActive(false);
     }
 
+    private void LoadingPanelPanelSetActive()
+    {
+        loadingPanel.SetActive(true);
+        StartCoroutine(LoadingPanelSetPassiveDelay());
+    }
+
+    private IEnumerator LoadingPanelSetPassiveDelay()
+    {
+        yield return new WaitForSeconds(1.3f);
+        loadingPanel.SetActive(false);
+    }
+
+    private void MainMenuPanelSetVisibility(bool setActive)
+    {
+        mainMenuPanel.SetActive(setActive);
+    }
+
     private void WordsPanelSetActive()
     {
         wordsPanel.SetActive(true);
@@ -111,6 +131,7 @@ public class CanvasManager : MonoBehaviour
         wordCompletedPanel.SetActive(false);
     }
 
+
     private void SetWordCountRemaining()
     {
         wordCountRemaining.text = "WORD COUNTDOWN  " + GameManager.instance.levelWordNumber;
@@ -137,5 +158,15 @@ public class CanvasManager : MonoBehaviour
     public void TryAgainButton()
     {
         GameManager.ResetLevelDelegate();
+    }
+
+    public void PlayButton()
+    {
+        MainMenuPanelSetVisibility(false);
+    }
+
+    public void SettingsButton()
+    {
+        MainMenuPanelSetVisibility(true);
     }
 }
