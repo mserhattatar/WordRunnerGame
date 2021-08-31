@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = System.Random;
 
 
@@ -23,22 +24,13 @@ public class SelectedWordChar
 
 public class WordManager : MonoBehaviour
 {
-    private readonly List<string> _words = new List<string>
-    {
-        "ASTRAL", "ATOMIC", "BENIGN", "BRAINY", "BRIGHT", "CHALKY", "CHEEKY", "CHUMMY", "CLAMMY", "CLUMPY", "COGENT",
-        "COMELY", "CRAVEN", "DECENT", "DEMURE", "DIRECT", "DREAMY", "EARTHY", "EFFETE", "EROTIC", "FILTHY", "FLABBY",
-        "FLIRTY", "FOLIAR", "GLASSY", "GLOOMY", "GRUBBY", "GRUMPY", "HEARTY", "HEATED", "HECTIC", "HUNGRY", "IRENIC",
-        "IRONIC", "KARMIC", "KINGLY", "LATENT", "MATURE", "MIGHTY", "MULISH", "NATIVE", "PALLID", "PATCHY", "POROUS",
-        "PRETTY", "PUTRID", "RAGGED", "RANCID", "RECENT", "RUSTIC", "SECRET", "SERENE", "SLOPPY", "SPONGY", "STUPID",
-        "TENDER", "TORPID", "TOUCHY", "TRENDY", "UPPITY", "URSINE", "VESTAL", "WORTHY"
-    }; //TODO: add more words
-
-    [SerializeField] private List<PanelLetterController> lettersInPanelChar;
     private static readonly Random Rng = new Random();
+    private List<PanelLetterController> _lettersInPanelChar = new List<PanelLetterController>();
+    [SerializeField] private CanvasWordUIManager canvasWordUIManager;
+    [SerializeField] private WordsScript wordsScript;
 
     public static WordManager İnstance;
     public int hiddenLetterAmount = 2; //TODO: set it automatically
-    [HideInInspector] public string selectedWord;
     [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
 
     public delegate void WordManagerDelegate();
@@ -61,7 +53,6 @@ public class WordManager : MonoBehaviour
     {
         SetSelectedWord();
     }
-  
 
     private void SetSelectedWordWithDelay()
     {
@@ -77,25 +68,19 @@ public class WordManager : MonoBehaviour
     private void SetSelectedWord()
     {
         selectedWordCharList.Clear();
-        SelectWord();
+        var selectedWord = wordsScript.SelectWord();
+        _lettersInPanelChar = canvasWordUIManager.ShowLetters(selectedWord.Length);
         InitSelectedWord(selectedWord);
     }
     
-    private void SelectWord()
+    private void InitSelectedWord(string selectedWord)
     {
-        var wordIndex = Rng.Next(_words.Count);
-        selectedWord = _words[wordIndex];
-        _words.Remove(_words[wordIndex]);
-    }
-
-    private void InitSelectedWord(string _selectedWord)
-    {
-        var lenght = _selectedWord.Length;
-        for (int i = 0; i < lenght; i++)
+        var lenght = selectedWord.Length;
+        for (var i = 0; i < lenght; i++)
         {
-            lettersInPanelChar[i].SetLetterVisibility(true);
-            selectedWordCharList.Add(new SelectedWordChar(i, _selectedWord[i].ToString(), false));
-            lettersInPanelChar[i].UpdateLetter(_selectedWord[i].ToString());
+            _lettersInPanelChar[i].SetLetterVisibility(true);
+            selectedWordCharList.Add(new SelectedWordChar(i, selectedWord[i].ToString(), false));
+            _lettersInPanelChar[i].UpdateLetter(selectedWord[i].ToString());
         }
 
         HideRandomLetter(hiddenLetterAmount, lenght);
@@ -111,7 +96,7 @@ public class WordManager : MonoBehaviour
             if (!selectedWordCharList[num].IsHidden)
             {
                 selectedWordCharList[num].IsHidden = true;
-                lettersInPanelChar[num].SetLetterVisibility(false);
+                _lettersInPanelChar[num].SetLetterVisibility(false);
                 numbers += 1;
             }
         }
@@ -125,7 +110,7 @@ public class WordManager : MonoBehaviour
         if (firstFound != null)
         {
             //TODO: set true visibilty after the doorpanelimage movement
-            CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, lettersInPanelChar[firstFound.Index], letter);
+            CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, _lettersInPanelChar[firstFound.Index], letter);
             selectedWordCharList[firstFound.Index].IsHidden = false;
 
             var hiddenFirstFound = selectedWordCharList.FirstOrDefault(h => h.IsHidden);
@@ -146,7 +131,7 @@ public class WordManager : MonoBehaviour
         {
             if (GameManager.instance.SubtractPlayerLife())
                 GameManager.GameOverDelegate();
-            
+
             PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
             CineMachineManager.CineMachineShakeDelegate();
             CanvasManager.SetPlayerLifeDelegate();

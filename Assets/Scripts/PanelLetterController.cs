@@ -15,4 +15,9 @@ public class PanelLetterController : MonoBehaviour
         letter.gameObject.SetActive(setActive);
     }
 
+    public void SetGameObjectVisibility(bool setActive)
+    {
+        gameObject.SetActive(setActive);
+    }
+
 }
