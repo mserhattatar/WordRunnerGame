@@ -17,7 +17,6 @@ public class CanvasWordUIManager : MonoBehaviour
             _ => eightLetterInPanelChar
         };
         ResetLetters(panelLetter);
-        Debug.Log("stringLenght " + stringLenght);
         return panelLetter;
     }
 
