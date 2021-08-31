@@ -8,7 +8,7 @@ public class DoorManager : MonoBehaviour
 {
     [SerializeField] private List<DoorController> doorsList;
     [SerializeField] private Transform player;
-    private string _alphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private const string AlphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private float _playerOldPosY;
     private bool _doorCreated;
     private static readonly Random Rng = new Random();
@@ -86,8 +86,8 @@ public class DoorManager : MonoBehaviour
 
         while (letters.Count < amount)
         {
-            var num = ran.Next(_alphabetChars.Length);
-            var letter = _alphabetChars[num];
+            var num = ran.Next(AlphabetChars.Length);
+            var letter = AlphabetChars[num];
             // Check if random letter is already in letters list or if it is a hidden letter
             if (letters.IndexOf(letter.ToString()) < 0 && hiddenLetters.IndexOf(letter.ToString()) < 0)
                 letters.Add(letter.ToString());

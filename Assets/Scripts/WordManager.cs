@@ -30,11 +30,13 @@ public class WordManager : MonoBehaviour
     [SerializeField] private WordsScript wordsScript;
 
     public static WordManager İnstance;
+
     public int hiddenLetterAmount = 2; //TODO: set it automatically
     [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
 
     public delegate void WordManagerDelegate();
 
+    public static WordManagerDelegate NextWordWithDelayDelegate;
     public static WordManagerDelegate NextWordDelegate;
 
     private void Awake()
@@ -44,7 +46,8 @@ public class WordManager : MonoBehaviour
 
     private void OnEnable()
     {
-        NextWordDelegate += SetSelectedWordWithDelay;
+        NextWordWithDelayDelegate += SetSelectedWordWithDelay;
+        NextWordDelegate += SetSelectedWord;
         GameManager.NextLevelDelegate += SetSelectedWord;
         GameManager.ResetLevelDelegate += SetSelectedWord;
     }
@@ -70,6 +73,7 @@ public class WordManager : MonoBehaviour
         selectedWordCharList.Clear();
         var selectedWord = wordsScript.SelectWord();
         _lettersInPanelChar = canvasWordUIManager.ShowLetters(selectedWord.Length);
+        Debug.Log(selectedWord + " = string /  stringLenght " + selectedWord.Length);
         InitSelectedWord(selectedWord);
     }
 
@@ -103,17 +107,20 @@ public class WordManager : MonoBehaviour
     }
 
     // Check if letter is one of the hidden letters. If yes; show the letter in box
-    public void FindLetterAndShow(string letter, Vector3 dorPos)
+    public void FindLetterAndShow(GameObject door)
     {
+        var doorController = door.GetComponent<DoorController>();
+        var letter = doorController.doorLetter;
         var firstFound = selectedWordCharList.FirstOrDefault(h => h.Letter.ToString() == letter && h.IsHidden);
 
         if (firstFound != null)
         {
-            //TODO: set true visibilty after the doorpanelimage movement
+            var dorPos = door.transform.position;
             CanvasDoorManager.instance.CanvasDoorUIMovement(dorPos, _lettersInPanelChar[firstFound.Index], letter);
             selectedWordCharList[firstFound.Index].IsHidden = false;
 
             var hiddenFirstFound = selectedWordCharList.FirstOrDefault(h => h.IsHidden);
+            doorController.SetDoor(false);
             if (hiddenFirstFound == null)
             {
                 GameManager.instance.SubtractLevelWordNumber(1);
@@ -124,14 +131,18 @@ public class WordManager : MonoBehaviour
                     GameManager.LevelCompletedDelegate();
                 }
                 else
-                    NextWordDelegate();
+                    NextWordWithDelayDelegate();
             }
         }
         else
         {
             if (GameManager.instance.SubtractPlayerLife())
+            {
                 GameManager.GameOverDelegate();
-
+            }
+            else
+                doorController.SetDoor(false);
+            
             PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
             CineMachineManager.CineMachineShakeDelegate();
             CanvasManager.SetPlayerLifeDelegate();

@@ -11,9 +11,7 @@ namespace PlayerScript
             if (!_isHitDoor && other.gameObject.CompareTag("door"))
             {
                 StartCoroutine(WaitForDoorCollision());
-                var o = other.gameObject.GetComponent<DoorController>();
-                WordManager.İnstance.FindLetterAndShow(o.doorLetter, o.transform.position);
-                o.SetDoor(false);
+                WordManager.İnstance.FindLetterAndShow(other.gameObject);
             }
         }
 
