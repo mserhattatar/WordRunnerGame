@@ -39,10 +39,10 @@ public class CanvasManager : MonoBehaviour
 
         GameManager.StartGameDelegate += WordsPanelSetActive;
         GameManager.StartGameDelegate += WordCountDownUISetActive;
-        GameManager.StartGameDelegate += SetWordCountRemaining;
         GameManager.StartGameDelegate += LevelNumberSetActive;
         GameManager.StartGameDelegate += PlayerLifeUISetActive;
         GameManager.StartGameDelegate += SetPlayerLifeText;
+        GameManager.StartGameDelegate += SetWordCountRemaining;
 
         GameManager.GameOverDelegate += GameOverPanelSetActive;
         GameManager.GameOverDelegate += WordsPanelSetPassive;
@@ -61,9 +61,9 @@ public class CanvasManager : MonoBehaviour
         GameManager.ResetLevelDelegate += GameOverPanelSetPassive;
         GameManager.ResetLevelDelegate += WordCountDownUISetActive;
         GameManager.ResetLevelDelegate += WordsPanelSetActive;
-        GameManager.ResetLevelDelegate += SetWordCountRemaining;
         GameManager.ResetLevelDelegate += PlayerLifeUISetActive;
         GameManager.ResetLevelDelegate += PauseButtonSetActive;
+        GameManager.ResetLevelDelegate += SetWordCountRemaining;
     }
 
     private void Start()

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -26,36 +27,39 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        SetLevelWordNumber();
-        NextLevelDelegate += NextLevel;
+        NextLevelDelegate += SetLevelWordNumber;
+        NextLevelDelegate += LevelUp;
+        NextLevelDelegate += SetLevelData;
+        NextLevelDelegate += ResetPlayerLifeCount;
+        
         GameOverDelegate += ResetPlayerLifeCount;
         GameOverDelegate += SetLevelWordNumber;
     }
 
-
-    private void NextLevel()
+    private void Start()
     {
-        ResetPlayerLifeCount();
-        levelNumber += 1;
-        SetLevelData();
         SetLevelWordNumber();
     }
+
 
     private void SetLevelWordNumber()
     {
         levelWordNumber = levelNumber * 2;
 
         if (levelNumber > 5)
-            levelWordNumber = 8;
-        else if (levelNumber > 3)
-            levelWordNumber = levelNumber + 2;
+            levelWordNumber = 6;
         else
-            levelWordNumber = 2;
+            levelWordNumber = levelNumber + 1;
     }
 
     public void SubtractLevelWordNumber(int subtractionNumber)
     {
         levelWordNumber -= subtractionNumber;
+        CanvasManager.SetWordCountRemainingDelegate();
+    }
+    private void LevelUp()
+    {
+        levelNumber += 1;
     }
 
     private void ResetPlayerLifeCount()

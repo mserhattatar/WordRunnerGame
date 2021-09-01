@@ -13,20 +13,15 @@ public class DoorManager : MonoBehaviour
     private bool _doorCreated;
     private static readonly Random Rng = new Random();
 
-    public delegate void DoorManagerDelegate();
-
-    public static DoorManagerDelegate SetOldPlayerPosDelegate;
 
     private void OnEnable()
     {
-        SetOldPlayerPosDelegate += SetPlayerOldPos;
-
         GameManager.ResetLevelDelegate += ResetDoorManager;
 
         GameManager.NextLevelDelegate += ResetDoorManager;
     }
 
-    private void LateUpdate()
+    private void Update()
     {
         if (!_doorCreated && player.transform.position.z > _playerOldPosY + 40f)
         {
@@ -129,8 +124,6 @@ public class DoorManager : MonoBehaviour
     private void ResetDoorManager()
     {
         SetDoorPassive(0, true);
-        SetPlayerOldPos();
-        _doorCreated = false;
         CreateDoorLetters(2);
     }
 }

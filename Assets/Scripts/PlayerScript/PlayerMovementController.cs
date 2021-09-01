@@ -112,7 +112,6 @@ namespace PlayerScript
             _timeCount = 0f;
             StopPlayerMovementDelegate();
             gameObject.transform.position = new Vector3(0, 0.53f, 0);
-            DoorManager.SetOldPlayerPosDelegate();
         }
     }
 }
