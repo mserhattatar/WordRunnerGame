@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;
+    public static GameManager Instance;
 
     public delegate void GameManagerDelegate();
 
@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
         levelNumber = 1;
         playerLife = 5;
         GameDataScript.GetLevelDataFromJson();
@@ -44,6 +44,13 @@ public class GameManager : MonoBehaviour
     private void SetLevelWordNumber()
     {
         levelWordNumber = levelNumber * 2;
+
+        if (levelNumber > 5)
+            levelWordNumber = 8;
+        else if (levelNumber > 3)
+            levelWordNumber = levelNumber + 2;
+        else
+            levelWordNumber = 2;
     }
 
     public void SubtractLevelWordNumber(int subtractionNumber)
@@ -60,6 +67,11 @@ public class GameManager : MonoBehaviour
     {
         playerLife -= 1;
         return playerLife == 0;
+    }
+
+    public static void GameTime(float timeScale)
+    {
+        Time.timeScale = timeScale;
     }
 
     public void SetLevelData()

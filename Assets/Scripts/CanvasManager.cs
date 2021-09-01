@@ -14,7 +14,9 @@ public class CanvasManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject loadingPanel;
+    [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject wordsPanel;
+    [SerializeField] private GameObject pauseButton;
     [SerializeField] private GameObject wordCountDownUI;
     [SerializeField] private TextMeshProUGUI wordCountRemaining;
     [SerializeField] private TextMeshProUGUI levelNumberText;
@@ -33,6 +35,7 @@ public class CanvasManager : MonoBehaviour
         GameManager.LevelCompletedDelegate += WordCompletedPanelSetActive;
         GameManager.LevelCompletedDelegate += WordCountDownUISetPassive;
         GameManager.LevelCompletedDelegate += PlayerLifeUISetPassive;
+        GameManager.LevelCompletedDelegate += PauseButtonSetPassive;
 
         GameManager.StartGameDelegate += WordsPanelSetActive;
         GameManager.StartGameDelegate += WordCountDownUISetActive;
@@ -45,11 +48,14 @@ public class CanvasManager : MonoBehaviour
         GameManager.GameOverDelegate += WordsPanelSetPassive;
         GameManager.GameOverDelegate += PlayerLifeUISetPassive;
         GameManager.GameOverDelegate += WordCountDownUISetPassive;
+        GameManager.GameOverDelegate += PauseButtonSetPassive;
 
         GameManager.NextLevelDelegate += LoadingPanelPanelSetActive;
         GameManager.NextLevelDelegate += WordCompletedPanelSetPassive;
         GameManager.NextLevelDelegate += WordCountDownUISetActive;
         GameManager.NextLevelDelegate += PlayerLifeUISetPassive;
+        GameManager.NextLevelDelegate += PauseButtonSetActive;
+        GameManager.NextLevelDelegate += SetWordCountRemaining;
 
         GameManager.ResetLevelDelegate += LoadingPanelPanelSetActive;
         GameManager.ResetLevelDelegate += GameOverPanelSetPassive;
@@ -57,6 +63,12 @@ public class CanvasManager : MonoBehaviour
         GameManager.ResetLevelDelegate += WordsPanelSetActive;
         GameManager.ResetLevelDelegate += SetWordCountRemaining;
         GameManager.ResetLevelDelegate += PlayerLifeUISetActive;
+        GameManager.ResetLevelDelegate += PauseButtonSetActive;
+    }
+
+    private void Start()
+    {
+        MainMenuPanelSetVisibility(true);
     }
 
     private void PlayerLifeUISetActive()
@@ -66,7 +78,7 @@ public class CanvasManager : MonoBehaviour
 
     private void SetPlayerLifeText()
     {
-        playerLifeText.text = GameManager.instance.playerLife.ToString();
+        playerLifeText.text = GameManager.Instance.playerLife.ToString();
     }
 
     private void PlayerLifeUISetPassive()
@@ -99,6 +111,7 @@ public class CanvasManager : MonoBehaviour
     private void MainMenuPanelSetVisibility(bool setActive)
     {
         mainMenuPanel.SetActive(setActive);
+        GameManager.GameTime(setActive ? 0f : 1.0f);
     }
 
     private void WordsPanelSetActive()
@@ -131,10 +144,19 @@ public class CanvasManager : MonoBehaviour
         wordCompletedPanel.SetActive(false);
     }
 
+    private void PauseButtonSetActive()
+    {
+        pauseButton.SetActive(true);
+    }
+
+    private void PauseButtonSetPassive()
+    {
+        pauseButton.SetActive(false);
+    }
 
     private void SetWordCountRemaining()
     {
-        wordCountRemaining.text = "WORD COUNTDOWN  " + GameManager.instance.levelWordNumber;
+        wordCountRemaining.text = "WORD COUNTDOWN  " + GameManager.Instance.levelWordNumber;
     }
 
     private void LevelNumberSetActive()
@@ -145,7 +167,7 @@ public class CanvasManager : MonoBehaviour
     private IEnumerator LevelNumberSetActiveWithDelay()
     {
         levelNumber.SetActive(true);
-        levelNumberText.text = GameManager.instance.levelNumber.ToString();
+        levelNumberText.text = GameManager.Instance.levelNumber.ToString();
         yield return new WaitForSeconds(3f);
         levelNumber.SetActive(false);
     }
@@ -162,11 +184,25 @@ public class CanvasManager : MonoBehaviour
 
     public void PlayButton()
     {
+        GameManager.ResetLevelDelegate();
         MainMenuPanelSetVisibility(false);
     }
 
     public void SettingsButton()
     {
         MainMenuPanelSetVisibility(true);
+        pausePanel.SetActive(false);
+    }
+
+    public void PauseButton()
+    {
+        pausePanel.SetActive(true);
+        GameManager.GameTime(0f);
+    }
+
+    public void PausePanelBackButton()
+    {
+        pausePanel.SetActive(false);
+        GameManager.GameTime(1.0f);
     }
 }

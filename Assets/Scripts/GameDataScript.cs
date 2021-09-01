@@ -22,8 +22,8 @@ public static class GameDataScript
     {
         var levelData = new LevelData
         {
-            levelNumber = GameManager.instance.levelNumber,
-            language = GameManager.instance.language
+            levelNumber = GameManager.Instance.levelNumber,
+            language = GameManager.Instance.language
         };
         var data = JsonUtility.ToJson(levelData);
         return data;
@@ -60,8 +60,8 @@ public static class GameDataScript
     {
         if (levelData != null)
         {
-            GameManager.instance.levelNumber = levelData.levelNumber;
-            GameManager.instance.language = levelData.language;
+            GameManager.Instance.levelNumber = levelData.levelNumber;
+            GameManager.Instance.language = levelData.language;
         }
 
         else

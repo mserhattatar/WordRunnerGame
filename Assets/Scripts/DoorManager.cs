@@ -12,7 +12,7 @@ public class DoorManager : MonoBehaviour
     private float _playerOldPosY;
     private bool _doorCreated;
     private static readonly Random Rng = new Random();
-    
+
     public delegate void DoorManagerDelegate();
 
     public static DoorManagerDelegate SetOldPlayerPosDelegate;
@@ -20,20 +20,13 @@ public class DoorManager : MonoBehaviour
     private void OnEnable()
     {
         SetOldPlayerPosDelegate += SetPlayerOldPos;
-        
+
         GameManager.ResetLevelDelegate += ResetDoorManager;
 
         GameManager.NextLevelDelegate += ResetDoorManager;
     }
 
-
-    private void Start()
-    {
-        CreateDoorLetters(2);
-        SetPlayerOldPos();
-    }
-
-    private void Update()
+    private void LateUpdate()
     {
         if (!_doorCreated && player.transform.position.z > _playerOldPosY + 40f)
         {
@@ -42,7 +35,7 @@ public class DoorManager : MonoBehaviour
         }
     }
 
-    private List<SelectedWordChar> GetSelectedWordList()
+    private static List<SelectedWordChar> GetSelectedWordList()
     {
         return WordManager.İnstance.selectedWordCharList;
     }
@@ -77,7 +70,7 @@ public class DoorManager : MonoBehaviour
         SetDoorsPositions(doorNumber, doorLetters);
     }
 
-    private List<string> CreateRandomLetter(int amount, List<SelectedWordChar> hiddens)
+    private static List<string> CreateRandomLetter(int amount, List<SelectedWordChar> hiddens)
     {
         // Create a string list of hidden letters
         var hiddenLetters = hiddens.Select(x => x.Letter).ToList();
@@ -104,7 +97,7 @@ public class DoorManager : MonoBehaviour
 
         var passiveDoors = doorsList.Where(d => !d.isSetActive).ToList();
         var randomizeDoorLetters = doorLetters.OrderBy(a => Guid.NewGuid()).ToList();
-        for (int i = 0; i < doorNumber; i++)
+        for (var i = 0; i < doorNumber; i++)
         {
             var pos = new Vector3(posX, 1.52f, player.transform.position.z + 35f);
             posX += 2.5f;
@@ -138,6 +131,6 @@ public class DoorManager : MonoBehaviour
         SetDoorPassive(0, true);
         SetPlayerOldPos();
         _doorCreated = false;
-        CanvasManager.SetWordCountRemainingDelegate();
+        CreateDoorLetters(2);
     }
 }
