@@ -1496,7 +1496,7 @@ public class WordsScript : MonoBehaviour
     //Set Language from GameManager
     private void InitLayoutManager()
     {
-        selectedLang = GameManager.instance.language;
+        selectedLang = GameManager.Instance.language;
         langDropdown.GetComponent<TMP_Dropdown>().value = selectedLang;
     }
 
@@ -1505,12 +1505,12 @@ public class WordsScript : MonoBehaviour
     {
         var dropdown = langDropdown.GetComponent<TMP_Dropdown>();
         selectedLang = dropdown.value;
-        WordManager.NextWordDelegate();
         SetChangeLang();
     }
 
-    private static void SetChangeLang()
+    private void SetChangeLang()
     {
-        GameManager.instance.SetLevelData();
+        GameManager.Instance.language = selectedLang;
+        GameManager.Instance.SetLevelData();
     }
 }

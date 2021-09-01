@@ -6,6 +6,7 @@ namespace PlayerScript
     public class PlayerCollisionController : MonoBehaviour
     {
         private bool _isHitDoor;
+
         private void OnTriggerEnter(Collider other)
         {
             if (!_isHitDoor && other.gameObject.CompareTag("door"))
