@@ -31,13 +31,12 @@ public class WordManager : MonoBehaviour
 
     public static WordManager İnstance;
 
-    public int hiddenLetterAmount = 2; //TODO: set it automatically
+    private int _hiddenLetterAmount = 2;
     [HideInInspector] public List<SelectedWordChar> selectedWordCharList = new List<SelectedWordChar>();
 
     public delegate void WordManagerDelegate();
 
     public static WordManagerDelegate NextWordWithDelayDelegate;
-    public static WordManagerDelegate NextWordDelegate;
 
     private void Awake()
     {
@@ -47,14 +46,18 @@ public class WordManager : MonoBehaviour
     private void OnEnable()
     {
         NextWordWithDelayDelegate += SetSelectedWordWithDelay;
-        NextWordDelegate += SetSelectedWord;
+
         GameManager.NextLevelDelegate += SetSelectedWord;
+        GameManager.NextLevelDelegate += HiddenLetterAmount;
+
         GameManager.ResetLevelDelegate += SetSelectedWord;
+        GameManager.ResetLevelDelegate += HiddenLetterAmount;
     }
 
     private void Start()
     {
         SetSelectedWord();
+        HiddenLetterAmount();
     }
 
     private void SetSelectedWordWithDelay()
@@ -87,7 +90,7 @@ public class WordManager : MonoBehaviour
             _lettersInPanelChar[i].UpdateLetter(selectedWord[i].ToString());
         }
 
-        HideRandomLetter(hiddenLetterAmount, lenght);
+        HideRandomLetter(_hiddenLetterAmount, lenght);
     }
 
     private void HideRandomLetter(int amount, int maxNumber)
@@ -123,9 +126,9 @@ public class WordManager : MonoBehaviour
             doorController.SetDoor(false);
             if (hiddenFirstFound == null)
             {
-                GameManager.instance.SubtractLevelWordNumber(1);
+                GameManager.Instance.SubtractLevelWordNumber(1);
 
-                if (GameManager.instance.levelWordNumber == 0)
+                if (GameManager.Instance.levelWordNumber == 0)
                 {
                     CanvasManager.SetWordCountRemainingDelegate();
                     GameManager.LevelCompletedDelegate();
@@ -136,16 +139,28 @@ public class WordManager : MonoBehaviour
         }
         else
         {
-            if (GameManager.instance.SubtractPlayerLife())
+            if (GameManager.Instance.SubtractPlayerLife())
             {
                 GameManager.GameOverDelegate();
             }
             else
                 doorController.SetDoor(false);
-            
+
             PlayerScript.PlayerAnimatorController.PlayerStumbleAnimationDelegate();
             CineMachineManager.CineMachineShakeDelegate();
             CanvasManager.SetPlayerLifeDelegate();
         }
+    }
+
+    private void HiddenLetterAmount()
+    {
+        var levelNumber = GameManager.Instance.levelNumber;
+
+        if (levelNumber > 15)
+            _hiddenLetterAmount = 4;
+        else if (levelNumber > 5)
+            _hiddenLetterAmount = 3;
+        else
+            _hiddenLetterAmount = 2;
     }
 }
