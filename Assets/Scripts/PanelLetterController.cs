@@ -19,5 +19,4 @@ public class PanelLetterController : MonoBehaviour
     {
         gameObject.SetActive(setActive);
     }
-
 }
