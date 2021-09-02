@@ -10,7 +10,7 @@ public class DoorManager : MonoBehaviour
     [SerializeField] private Transform player;
     private const string AlphabetChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private float _playerOldPosY;
-    private bool _doorCreated;
+    private bool _isDoorCreated;
     private static readonly Random Rng = new Random();
 
 
@@ -23,34 +23,29 @@ public class DoorManager : MonoBehaviour
 
     private void Update()
     {
-        if (!_doorCreated && player.transform.position.z > _playerOldPosY + 40f)
+        if (!_isDoorCreated && player.transform.position.z > _playerOldPosY + 35f)
         {
-            _doorCreated = true;
+            _isDoorCreated = true;
             CreateDoorLetters(Rng.Next(2, 4));
         }
     }
 
-    private static List<SelectedWordChar> GetSelectedWordList()
-    {
-        return WordManager.İnstance.selectedWordCharList;
-    }
-
-    private void CreateDoorLetters(int doorNumber)
+    private void CreateDoorLetters(int doorCount)
     {
         // Get a random hidden word
         var selectedChars = GetSelectedWordList();
         if (selectedChars == null || selectedChars.Count == 0)
         {
             Debug.LogWarning("Selected char list is empty or null");
+            _isDoorCreated = false;
             return;
         }
-
 
         // Create a object list of hidden letters
         var hiddenList = selectedChars.Where(c => c.IsHidden).ToList();
         if (hiddenList.Count == 0)
         {
-            _doorCreated = false;
+            _isDoorCreated = false;
             return;
         }
 
@@ -58,11 +53,18 @@ public class DoorManager : MonoBehaviour
         var index = Rng.Next(0, hiddenList.Count());
         var hiddenLetter = hiddenList[index].Letter;
         // Create random letters to show in other doors
-        var doorLetters = CreateRandomLetter(doorNumber - 1, hiddenList);
+        var doorLetters = CreateRandomLetter(doorCount - 1, hiddenList);
         doorLetters.Add(hiddenLetter);
 
         SetDoorPassive(player.transform.position.z);
-        SetDoorsPositions(doorNumber, doorLetters);
+        SetDoorsPositions(doorCount, doorLetters);
+        SetPlayerOldPos();
+        _isDoorCreated = false;
+    }
+
+    private static List<SelectedWordChar> GetSelectedWordList()
+    {
+        return WordManager.İnstance.selectedWordCharList;
     }
 
     private static List<string> CreateRandomLetter(int amount, List<SelectedWordChar> hiddens)
@@ -84,32 +86,29 @@ public class DoorManager : MonoBehaviour
         return letters;
     }
 
-    private void SetDoorsPositions(int doorNumber, IReadOnlyList<string> doorLetters)
+    private void SetDoorsPositions(int doorCount, IReadOnlyList<string> doorLetters)
     {
         var posX = -1.4f;
-        if (doorNumber == 3)
+        if (doorCount == 3)
             posX = -2.5f;
 
         var passiveDoors = doorsList.Where(d => !d.isSetActive).ToList();
         var randomizeDoorLetters = doorLetters.OrderBy(a => Guid.NewGuid()).ToList();
-        for (var i = 0; i < doorNumber; i++)
+        for (var i = 0; i < doorCount; i++)
         {
             var pos = new Vector3(posX, 1.52f, player.transform.position.z + 35f);
             posX += 2.5f;
             passiveDoors[i].GetComponent<DoorController>().SetDoorPosWriteLetter(randomizeDoorLetters[i], pos);
         }
-
-        SetPlayerOldPos();
-        _doorCreated = false;
     }
 
-    private void SetDoorPassive(float playerPosZ = 0, bool all = false)
+    private void SetDoorPassive(float playerPosZ, bool all = false)
     {
         var activeDoors = doorsList.Where(d => d.isSetActive).ToList();
 
         foreach (var a in activeDoors)
         {
-            if (all || playerPosZ > a.gameObject.transform.position.z)
+            if (all || playerPosZ + 5f > a.gameObject.transform.position.z)
             {
                 a.GetComponent<DoorController>().SetDoor(false);
             }
@@ -124,6 +123,8 @@ public class DoorManager : MonoBehaviour
     private void ResetDoorManager()
     {
         SetDoorPassive(0, true);
+        SetPlayerOldPos();
+        _isDoorCreated = false;
         CreateDoorLetters(2);
     }
 }

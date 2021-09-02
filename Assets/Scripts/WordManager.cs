@@ -67,7 +67,7 @@ public class WordManager : MonoBehaviour
 
     private IEnumerator SetSelectedWordDelay()
     {
-        yield return new WaitForSeconds(1.3f);
+        yield return new WaitForSeconds(1f);
         SetSelectedWord();
     }
 
@@ -76,6 +76,7 @@ public class WordManager : MonoBehaviour
         selectedWordCharList.Clear();
         var selectedWord = wordsScript.SelectWord();
         _lettersInPanelChar = canvasWordUIManager.ShowLetters(selectedWord.Length);
+        
         Debug.Log(selectedWord + " = string /  stringLenght " + selectedWord.Length);
         InitSelectedWord(selectedWord);
     }
