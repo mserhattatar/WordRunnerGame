@@ -12,7 +12,7 @@ This game is still in progress.
 -  Better design for doors
 -  Better Button etc. UI design
 
-I have developed the RunnerCoreStudios game in Unity with C# language. 
+I have developed the Word Runner game in Unity with C# language. 
 
 There are 6 letter words with missing letters given on every level. On your way you will see some doors which have letters on them. Every time you see doors together, one of the doors has one missing letter. You try to hit the correct missing letter and complete the word. If you hit the wrong door 5 times, the game is over.  
 
